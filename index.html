@@ -2,39 +2,127 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>توقعات كأس العرب 2025</title>
-    
-    <!-- خط تجوال -->
-    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800;900&display=swap" rel="stylesheet">
-    
-    <!-- مكتبة Tailwind CSS للتنسيق -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>عاجل العراق | الروابط الرسمية</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    
-    <!-- مكتبات React -->
-    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
-    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
-    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap" rel="stylesheet">
     <style>
         body {
-            font-family: 'Tajawal', sans-serif;
-            background-color: #0f172a;
-            overflow: hidden; /* منع السكرول */
-            touch-action: manipulation;
+            font-family: 'Cairo', sans-serif;
+            background-color: #000000;
+            color: white;
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
         }
+        .netflix-red {
+            color: #E50914;
+        }
+        .btn-netflix {
+            background-color: #E50914;
+            transition: transform 0.2s, background-color 0.2s;
+        }
+        .btn-netflix:hover {
+            background-color: #f40612;
+            transform: scale(1.02);
+        }
+        .card-bg {
+            background-color: #181818;
+            border: 1px solid #2f2f2f;
+        }
+        .glow {
+            box-shadow: 0 0 20px rgba(229, 9, 20, 0.2);
+        }
+        .code-box {
+            border: 2px dashed #E50914;
+            background: rgba(229, 9, 20, 0.05);
+        }
+    </style>
+</head>
+<body class="items-center justify-start py-8 px-4">
 
-        /* أنيميشن الخلفية (سلاش) */
-        .slash-bg {
-            position: absolute;
-            inset: -50%;
-            background: 
-                linear-gradient(-45deg, transparent 40%, rgba(59, 130, 246, 0.1) 45%, rgba(59, 130, 246, 0.3) 50%, rgba(59, 130, 246, 0.1) 55%, transparent 60%),
-                linear-gradient(-45deg, transparent 20%, rgba(37, 99, 235, 0.05) 25%, rgba(37, 99, 235, 0.2) 30%, rgba(37, 99, 235, 0.05) 35%, transparent 40%);
-            background-size: 200% 200%;
-            animation: slashMove 15s linear infinite;
-            pointer-events: none;
-            z-index: 0;
+    <!-- Logo Section -->
+    <div class="text-center mb-10">
+        <h1 class="text-5xl md:text-7xl font-black netflix-red tracking-tighter mb-2">عاجل العراق</h1>
+        <p class="text-gray-400 text-lg font-bold">المنصة الرسمية لتطبيقات سينمانا</p>
+    </div>
+
+    <!-- Links Container -->
+    <div class="w-full max-w-2xl space-y-4">
+        
+        <!-- INFO BOX: DOWNLOADER CODE -->
+        <div class="code-box p-6 rounded-xl text-center mb-8">
+            <h3 class="text-red-500 font-bold mb-2">تحميل مباشر للشاشات الذكية</h3>
+            <p class="text-sm text-gray-300 mb-3">استخدم تطبيق <span class="text-white font-bold">Downloader</span> وأدخل الكود التالي:</p>
+            <div class="text-4xl font-black tracking-widest text-white bg-black/50 py-3 rounded-lg border border-red-900/30">
+                6911210
+            </div>
+        </div>
+
+        <!-- Link 1: Android Mobile -->
+        <a href="https://www.mediafire.com/file/5r8g57eb9burrrw/Cinemana_Offical_%2528New%2529.apk/file" 
+           target="_blank"
+           class="card-bg glow flex flex-col md:flex-row items-center justify-between p-6 rounded-lg group transition-all hover:border-red-600">
+            <div class="flex items-center gap-4 mb-4 md:mb-0">
+                <div class="bg-red-600/10 p-3 rounded-full text-red-500">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5M5 12l7 7 7-7"/></svg>
+                </div>
+                <div>
+                    <h2 class="text-xl font-bold">سينمانا للأندرويد</h2>
+                    <p class="text-gray-500 text-sm">الإصدار الرسمي للهواتف الذكية</p>
+                </div>
+            </div>
+            <span class="btn-netflix px-8 py-2.5 rounded-md font-bold text-sm w-full md:w-auto text-center shadow-lg">تحميل APK</span>
+        </a>
+
+        <!-- Link 2: Android TV -->
+        <a href="https://www.mediafire.com/file/hujq48eedtmr9c0/Cinemana_Leanback+v4.5.9.apk/file" 
+           target="_blank"
+           class="card-bg flex flex-col md:flex-row items-center justify-between p-6 rounded-lg group hover:border-red-600 transition-all">
+            <div class="flex items-center gap-4 mb-4 md:mb-0">
+                <div class="bg-red-600/10 p-3 rounded-full text-red-500">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+                </div>
+                <div>
+                    <h2 class="text-xl font-bold">سينمانا للشاشات (TV)</h2>
+                    <p class="text-gray-500 text-sm">نسخة Android TV / TV Box</p>
+                </div>
+            </div>
+            <span class="btn-netflix px-8 py-2.5 rounded-md font-bold text-sm w-full md:w-auto text-center shadow-lg">تحميل TV</span>
+        </a>
+
+        <!-- Link 3: Web/iPhone -->
+        <a href="https://cinemana.shabakaty.cc/mobile;oldUrl=home" 
+           target="_blank"
+           class="card-bg flex flex-col md:flex-row items-center justify-between p-6 rounded-lg group hover:border-gray-400 transition-all">
+            <div class="flex items-center gap-4 mb-4 md:mb-0">
+                <div class="bg-gray-800 p-3 rounded-full text-gray-300">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="2" width="14" height="20" rx="2" ry="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg>
+                </div>
+                <div>
+                    <h2 class="text-xl font-bold italic">دخول المتصفح (Web)</h2>
+                    <p class="text-gray-500 text-sm">لأجهزة آيفون والمتصفحات العامة</p>
+                </div>
+            </div>
+            <span class="bg-white text-black px-8 py-2.5 rounded-md font-bold text-sm w-full md:w-auto text-center hover:bg-gray-200 shadow-lg">فتح الآن</span>
+        </a>
+
+    </div>
+
+    <!-- Footer -->
+    <footer class="mt-auto pt-16 pb-8 text-gray-600 text-sm text-center">
+        <div class="flex justify-center gap-4 mb-4">
+             <div class="h-[1px] w-12 bg-zinc-800 my-auto"></div>
+             <span class="text-zinc-500">عاجل العراق</span>
+             <div class="h-[1px] w-12 bg-zinc-800 my-auto"></div>
+        </div>
+        <p>جميع حقوق الروابط محفوظة لشبكتي</p>
+        <p class="mt-1">تم التحديث لعام 2024</p>
+    </footer>
+
+</body>
+</html>            z-index: 0;
         }
         .slash-bg-2 {
              background: linear-gradient(-45deg, transparent 60%, rgba(96, 165, 250, 0.05) 65%, rgba(96, 165, 250, 0.15) 70%, rgba(96, 165, 250, 0.05) 75%, transparent 80%);
