@@ -1,394 +1,125 @@
-import React, { useState, useMemo, useEffect, useRef } from 'react';
-
-// مكون أيقونة القوة
-const PowerIcon = () => (
-  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 inline-block text-amber-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-    <path strokeLinecap="round" strokeLinejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z" />
-  </svg>
-);
-
-// المكون الرئيسي للتطبيق
-const App = () => {
-  // حالة قائمة الأسماء ومستويات قوتها، تبدأ فارغة
-  const [names, setNames] = useState([]);
-  // حالة حقل إدخال الاسم الجديد
-  const [newName, setNewName] = useState('');
-  // حالة لتحديد طريقة الترتيب ('power' أو 'name')
-  const [sortBy, setSortBy] = useState('power');
-  // حالة لتخزين سجل أحداث القوة
-  const [powerLog, setPowerLog] = useState([]);
-  // حالة للتحكم في التبويب النشط ('names' أو 'log')
-  const [activeTab, setActiveTab] = useState('names');
-  // حالة لمدة المؤقت (بالأيام) والعد التنازلي
-  const [timerDays, setTimerDays] = useState(7);
-  const [countdown, setCountdown] = useState(0);
-  const [isTimerRunning, setIsTimerRunning] = useState(false);
-  // حالة للتحكم في نافذة التأكيد لتصفير القوة
-  const [showConfirmModal, setShowConfirmModal] = useState(false);
-
-  // استخدام useRef للاحتفاظ بمرجع المؤقت لتمكين إيقافه
-  const timerRef = useRef(null);
-
-  // دالة مساعدة لتنسيق الأرقام الكبيرة (مثل 100000 إلى 100k)
-  const formatPowerNumber = (num) => {
-    if (num >= 1000000000) {
-      return (num / 1000000000).toFixed(1).replace(/\.0$/, '') + 'B';
-    }
-    if (num >= 1000000) {
-      return (num / 1000000).toFixed(1).replace(/\.0$/, '') + 'M';
-    }
-    if (num >= 1000) {
-      return (num / 1000).toFixed(1).replace(/\.0$/, '') + 'k';
-    }
-    return num.toString();
-  };
-
-  // استخدام useMemo لترتيب قائمة الأسماء. يتم إعادة الترتيب فقط عند تغيير القائمة أو طريقة الترتيب
-  const sortedNames = useMemo(() => {
-    const namesCopy = [...names];
-    if (sortBy === 'power') {
-      // ترتيب حسب القوة تنازلياً
-      return namesCopy.sort((a, b) => b.power - a.power);
-    } else if (sortBy === 'name') {
-      // ترتيب حسب الاسم أبجدياً
-      return namesCopy.sort((a, b) => a.name.localeCompare(b.name, 'ar'));
-    }
-    return namesCopy;
-  }, [names, sortBy]);
-
-  // useEffect للتعامل مع منطق المؤقت
-  useEffect(() => {
-    if (isTimerRunning && countdown > 0) {
-      timerRef.current = setTimeout(() => {
-        setCountdown(countdown - 1);
-      }, 1000);
-    } else if (countdown === 0 && isTimerRunning) {
-      // انتهى المؤقت، قم بزيادة القوة
-      const updatedNames = names.map(person => ({ ...person, power: person.power + 100000 }));
-      setNames(updatedNames);
-      
-      const newLogEntry = {
-        id: Date.now(),
-        timestamp: new Date().toLocaleString('ar-SA'),
-        action: `تم إضافة 100,000 ${formatPowerNumber(1)} لجميع الأسماء عبر المؤقت`,
-        changes: updatedNames.map(p => ({ name: p.name, newPower: p.power })),
-      };
-      setPowerLog([newLogEntry, ...powerLog]);
-      setActiveTab('log');
-
-      setIsTimerRunning(false);
-    }
-
-    // دالة التنظيف لإيقاف المؤقت عند إزالة المكون
-    return () => clearTimeout(timerRef.current);
-  }, [isTimerRunning, countdown, names, powerLog, formatPowerNumber]);
-
-  // دالة لإضافة اسم جديد إلى القائمة
-  const addName = () => {
-    if (newName.trim() === '') return;
-    
-    const newNameObject = {
-      id: Date.now(),
-      name: newName,
-      power: 0,
-    };
-
-    setNames([...names, newNameObject]);
-    setNewName('');
-  };
-
-  // دالة لزيادة قوة اسم محدد بـ 100,000
-  const increasePower = (id) => {
-    setNames(names.map(person => 
-      person.id === id ? { ...person, power: person.power + 100000 } : person
-    ));
-  };
-  
-  // دالة لتصفير قوة جميع الأسماء
-  const resetAllPower = () => {
-    const updatedNames = names.map(person => ({
-      ...person,
-      power: 0,
-    }));
-    setNames(updatedNames);
-
-    const newLogEntry = {
-      id: Date.now(),
-      timestamp: new Date().toLocaleString('ar-SA'),
-      action: 'تم تصفير قوة جميع الأسماء يدوياً.',
-      changes: updatedNames.map(p => ({ name: p.name, newPower: p.power })),
-    };
-    setPowerLog([newLogEntry, ...powerLog]);
-    setActiveTab('log');
-    setShowConfirmModal(false); // إغلاق نافذة التأكيد بعد التنفيذ
-  };
-
-  // دالة لبدء المؤقت
-  const startTimer = () => {
-    if (timerDays > 0 && !isTimerRunning) {
-      const totalSeconds = timerDays * 24 * 60 * 60;
-      setCountdown(totalSeconds);
-      setIsTimerRunning(true);
-    }
-  };
-
-  // دالة لإيقاف المؤقت
-  const stopTimer = () => {
-    setIsTimerRunning(false);
-    clearTimeout(timerRef.current);
-    setCountdown(0);
-  };
-  
-  // دالة مساعدة لتنسيق وقت العد التنازلي
-  const formatTime = (seconds) => {
-    const d = Math.floor(seconds / (3600 * 24));
-    const h = Math.floor((seconds % (3600 * 24)) / 3600);
-    const m = Math.floor((seconds % 3600) / 60);
-    const s = seconds % 60;
-    
-    return `${d}ي ${h}س ${m}د ${s}ث`;
-  };
-  
-  // محتوى التبويب 'الأسماء'
-  const renderNamesList = () => (
-    <>
-      <div className="flex items-center mb-6">
-        <input
-          type="text"
-          className="flex-grow p-3 border-2 border-zinc-700 bg-zinc-800 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500 transition duration-300 placeholder-gray-400 text-right text-gray-100"
-          placeholder="أضف اسم جديد..."
-          value={newName}
-          onChange={(e) => setNewName(e.target.value)}
-          onKeyDown={(e) => {
-            if (e.key === 'Enter') {
-              addName();
-            }
-          }}
-        />
-        <button
-          onClick={addName}
-          className="bg-amber-500 text-zinc-900 p-3 ml-2 rounded-lg hover:bg-amber-400 transition duration-300 shadow-md flex items-center"
-        >
-          <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 ml-2" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-            <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
-          </svg>
-          أضف
-        </button>
-      </div>
-
-      <div className="flex flex-col sm:flex-row justify-between items-center mb-6 space-y-4 sm:space-y-0">
-        <div className="flex items-center space-x-2">
-          <span className="text-sm text-gray-400 ml-3">ترتيب حسب:</span>
-          <button
-            onClick={() => setSortBy('power')}
-            className={`p-2 rounded-full text-sm font-semibold transition duration-300 ${
-              sortBy === 'power' ? 'bg-amber-500 text-zinc-900' : 'text-gray-400 hover:text-amber-400'
-            }`}
-          >
-            <PowerIcon />
-          </button>
-          <button
-            onClick={() => setSortBy('name')}
-            className={`p-2 rounded-full text-sm font-semibold transition duration-300 ${
-              sortBy === 'name' ? 'bg-amber-500 text-zinc-900' : 'text-gray-400 hover:text-amber-400'
-            }`}
-          >
-            الاسم
-          </button>
-        </div>
-        <button
-          onClick={() => setShowConfirmModal(true)} // عرض نافذة التأكيد
-          className="bg-red-500 text-white p-2 rounded-lg hover:bg-red-600 transition duration-300 shadow-md flex items-center"
-        >
-          <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 ml-2" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-            <path strokeLinecap="round" strokeLinejoin="round" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2A9 9 0 111 10a9 9 0 0118 0z" />
-          </svg>
-          تصفير الكل
-        </button>
-      </div>
-
-      {/* قسم المؤقت */}
-      <div className="flex items-center justify-center mb-6 p-4 bg-zinc-800 rounded-lg shadow-sm">
-        <span className="text-sm text-gray-400 ml-3">مؤقت القوة:</span>
-        <input
-          type="number"
-          min="1"
-          value={timerDays}
-          onChange={(e) => {
-            const value = parseInt(e.target.value, 10);
-            setTimerDays(isNaN(value) || value < 1 ? 1 : value);
-          }}
-          className="w-16 p-2 text-center rounded-lg bg-zinc-900 border border-zinc-700 focus:outline-none focus:ring-2 focus:ring-amber-500 transition duration-300"
-          disabled={isTimerRunning}
-        />
-        <span className="text-sm text-gray-400 mx-2">أيام</span>
-        {isTimerRunning ? (
-          <button
-            onClick={stopTimer}
-            className="bg-red-500 text-white p-2 rounded-lg hover:bg-red-600 transition duration-300 shadow-md flex items-center"
-          >
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 ml-2" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-            </svg>
-            إيقاف ({formatTime(countdown)})
-          </button>
-        ) : (
-          <button
-            onClick={startTimer}
-            className="bg-green-500 text-white p-2 rounded-lg hover:bg-green-600 transition duration-300 shadow-md flex items-center"
-          >
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 ml-2" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M5 3v18l14-9L5 3z" />
-            </svg>
-            ابدأ
-          </button>
-        )}
-      </div>
-
-      {/* قائمة الأسماء مع مستويات قوتها */}
-      <div className="space-y-4">
-        {sortedNames.length > 0 ? (
-          sortedNames.map((person) => (
-            <NameItem 
-              key={person.id}
-              person={person}
-              increasePower={increasePower}
-              formatPowerNumber={formatPowerNumber}
-            />
-          ))
-        ) : (
-          <p className="text-center text-gray-500 text-lg">
-            لا توجد أسماء حتى الآن. أضف اسماً للبدء!
-          </p>
-        )}
-      </div>
-    </>
-  );
-
-  // دالة لعرض سجل القوة
-  const renderPowerLog = () => (
-    <div className="space-y-4">
-      <h2 className="text-2xl font-bold text-amber-400 text-center mb-4">سجل الأحداث</h2>
-      {powerLog.length > 0 ? (
-        powerLog.map((log) => (
-          <div key={log.id} className="bg-zinc-800 p-4 rounded-xl shadow-sm">
-            <p className="text-sm text-gray-400 mb-2">
-              التاريخ: <span className="font-semibold text-gray-200">{log.timestamp}</span>
-            </p>
-            <p className="text-sm text-gray-400 mb-2">
-              الحدث: <span className="font-semibold text-amber-400">{log.action}</span>
-            </p>
-            <div className="mt-2 space-y-1">
-              {log.changes.map((change, index) => (
-                <div key={index} className="flex justify-between items-center text-sm text-gray-200">
-                  <span>{change.name}</span>
-                  <span className="font-bold text-amber-400">
-                    قوة جديدة: <PowerIcon /> {formatPowerNumber(change.newPower)}
-                  </span>
-                </div>
-              ))}
-            </div>
-          </div>
-        ))
-      ) : (
-        <p className="text-center text-gray-500 text-lg">
-          لا يوجد سجل أحداث حتى الآن.
-        </p>
-      )}
-    </div>
-  );
-
-  // مكون نافذة التأكيد
-  const ConfirmationModal = () => (
-    <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center p-4 z-50">
-      <div className="bg-zinc-800 p-6 rounded-lg shadow-xl max-w-sm w-full text-center">
-        <h3 className="text-xl font-bold text-amber-400 mb-4">تأكيد العملية</h3>
-        <p className="text-gray-200 mb-6">هل أنت متأكد من أنك تريد تصفير قوة جميع الأسماء؟</p>
-        <div className="flex justify-around space-x-4">
-          <button
-            onClick={resetAllPower}
-            className="flex-grow bg-red-600 text-white p-3 rounded-lg hover:bg-red-700 transition duration-300"
-          >
-            تأكيد
-          </button>
-          <button
-            onClick={() => setShowConfirmModal(false)}
-            className="flex-grow bg-zinc-700 text-gray-300 p-3 rounded-lg hover:bg-zinc-600 transition duration-300"
-          >
-            إلغاء
-          </button>
-        </div>
-      </div>
-    </div>
-  );
-
-  return (
-    <div className="bg-zinc-900 min-h-screen p-8 flex items-center justify-center text-gray-100 font-sans">
-      <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;700&display=swap');
-        .font-sans {
-          font-family: 'Cairo', sans-serif;
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>عاجل العراق | الروابط الرسمية</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Cairo', sans-serif;
+            background-color: #000000;
+            color: white;
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
         }
-      `}</style>
-      <div className="w-full max-w-xl bg-zinc-900 rounded-2xl shadow-2xl p-6 sm:p-8">
-        <h1 className="text-4xl font-bold text-center text-amber-400 mb-6 drop-shadow-lg">
-          تطبيق رفع القوة <PowerIcon />
-        </h1>
+        .netflix-red {
+            color: #E50914;
+        }
+        .btn-netflix {
+            background-color: #E50914;
+            transition: transform 0.2s, background-color 0.2s;
+        }
+        .btn-netflix:hover {
+            background-color: #f40612;
+            transform: scale(1.02);
+        }
+        .card-bg {
+            background-color: #181818;
+            border: 1px solid #2f2f2f;
+        }
+        .glow {
+            box-shadow: 0 0 20px rgba(229, 9, 20, 0.2);
+        }
+        .code-box {
+            border: 2px dashed #E50914;
+            background: rgba(229, 9, 20, 0.05);
+        }
+    </style>
+</head>
+<body class="items-center justify-start py-8 px-4">
+
+    <!-- Logo Section -->
+    <div class="text-center mb-10">
+        <h1 class="text-5xl md:text-7xl font-black netflix-red tracking-tighter mb-2">عاجل العراق</h1>
+        <p class="text-gray-400 text-lg font-bold">المنصة الرسمية لتطبيقات سينمانا</p>
+    </div>
+
+    <!-- Links Container -->
+    <div class="w-full max-w-2xl space-y-4">
         
-        {/* شريط التبويبات */}
-        <div className="flex justify-center mb-6 bg-zinc-800 p-2 rounded-full shadow-inner">
-          <button
-            onClick={() => setActiveTab('names')}
-            className={`p-3 rounded-full text-lg font-semibold transition duration-300 flex-grow ${
-              activeTab === 'names' ? 'bg-amber-500 text-zinc-900 shadow-md' : 'text-gray-400 hover:text-amber-400'
-            }`}
-          >
-            الأسماء
-          </button>
-          <button
-            onClick={() => setActiveTab('log')}
-            className={`p-3 rounded-full text-lg font-semibold transition duration-300 flex-grow ${
-              activeTab === 'log' ? 'bg-amber-500 text-zinc-900 shadow-md' : 'text-gray-400 hover:text-amber-400'
-            }`}
-          >
-            سجل الأحداث
-          </button>
+        <!-- INFO BOX: DOWNLOADER CODE -->
+        <div class="code-box p-6 rounded-xl text-center mb-8">
+            <h3 class="text-red-500 font-bold mb-2">تحميل مباشر للشاشات الذكية</h3>
+            <p class="text-sm text-gray-300 mb-3">استخدم تطبيق <span class="text-white font-bold">Downloader</span> وأدخل الكود التالي:</p>
+            <div class="text-4xl font-black tracking-widest text-white bg-black/50 py-3 rounded-lg border border-red-900/30">
+                6911210
+            </div>
         </div>
 
-        {activeTab === 'names' ? renderNamesList() : renderPowerLog()}
-        {showConfirmModal && <ConfirmationModal />}
-      </div>
-    </div>
-  );
-};
+        <!-- Link 1: Android Mobile -->
+        <a href="https://www.mediafire.com/file/5r8g57eb9burrrw/Cinemana_Offical_%2528New%2529.apk/file" 
+           target="_blank"
+           class="card-bg glow flex flex-col md:flex-row items-center justify-between p-6 rounded-lg group transition-all hover:border-red-600">
+            <div class="flex items-center gap-4 mb-4 md:mb-0">
+                <div class="bg-red-600/10 p-3 rounded-full text-red-500">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5M5 12l7 7 7-7"/></svg>
+                </div>
+                <div>
+                    <h2 class="text-xl font-bold">سينمانا للأندرويد</h2>
+                    <p class="text-gray-500 text-sm">الإصدار الرسمي للهواتف الذكية</p>
+                </div>
+            </div>
+            <span class="btn-netflix px-8 py-2.5 rounded-md font-bold text-sm w-full md:w-auto text-center shadow-lg">تحميل APK</span>
+        </a>
 
-// مكون عنصر القائمة
-const NameItem = ({ person, increasePower, formatPowerNumber }) => {
-  return (
-    <div
-      key={person.id}
-      className="flex items-center bg-zinc-800 p-4 rounded-xl shadow-sm hover:shadow-md transition duration-300 transform hover:-translate-y-1"
-    >
-      <div className="flex-grow">
-        <span className="text-lg font-semibold text-gray-100">{person.name}</span>
-        <div className="text-sm text-gray-400 mt-1">
-          <PowerIcon /> <span className="font-bold text-amber-400">{formatPowerNumber(person.power)}</span>
+        <!-- Link 2: Android TV -->
+        <a href="https://www.mediafire.com/file/hujq48eedtmr9c0/Cinemana_Leanback+v4.5.9.apk/file" 
+           target="_blank"
+           class="card-bg flex flex-col md:flex-row items-center justify-between p-6 rounded-lg group hover:border-red-600 transition-all">
+            <div class="flex items-center gap-4 mb-4 md:mb-0">
+                <div class="bg-red-600/10 p-3 rounded-full text-red-500">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+                </div>
+                <div>
+                    <h2 class="text-xl font-bold">سينمانا للشاشات (TV)</h2>
+                    <p class="text-gray-500 text-sm">نسخة Android TV / TV Box</p>
+                </div>
+            </div>
+            <span class="btn-netflix px-8 py-2.5 rounded-md font-bold text-sm w-full md:w-auto text-center shadow-lg">تحميل TV</span>
+        </a>
+
+        <!-- Link 3: Web/iPhone -->
+        <a href="https://cinemana.shabakaty.cc/mobile;oldUrl=home" 
+           target="_blank"
+           class="card-bg flex flex-col md:flex-row items-center justify-between p-6 rounded-lg group hover:border-gray-400 transition-all">
+            <div class="flex items-center gap-4 mb-4 md:mb-0">
+                <div class="bg-gray-800 p-3 rounded-full text-gray-300">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="2" width="14" height="20" rx="2" ry="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg>
+                </div>
+                <div>
+                    <h2 class="text-xl font-bold italic">دخول المتصفح (Web)</h2>
+                    <p class="text-gray-500 text-sm">لأجهزة آيفون والمتصفحات العامة</p>
+                </div>
+            </div>
+            <span class="bg-white text-black px-8 py-2.5 rounded-md font-bold text-sm w-full md:w-auto text-center hover:bg-gray-200 shadow-lg">فتح الآن</span>
+        </a>
+
+    </div>
+
+    <!-- Footer -->
+    <footer class="mt-auto pt-16 pb-8 text-gray-600 text-sm text-center">
+        <div class="flex justify-center gap-4 mb-4">
+             <div class="h-[1px] w-12 bg-zinc-800 my-auto"></div>
+             <span class="text-zinc-500">عاجل العراق</span>
+             <div class="h-[1px] w-12 bg-zinc-800 my-auto"></div>
         </div>
-      </div>
+        <p>جميع حقوق الروابط محفوظة لشبكتي</p>
+        <p class="mt-1">تم التحديث لعام 2024</p>
+    </footer>
 
-      <div className="flex items-center space-x-2 mr-2">
-        <button
-          onClick={() => increasePower(person.id)}
-          className="bg-amber-500 text-zinc-900 p-3 rounded-full hover:bg-amber-400 transition duration-300 shadow-lg flex items-center justify-center"
-          title="زيادة القوة"
-        >
-          <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-            <path strokeLinecap="round" strokeLinejoin="round" d="M5 10l7-7m0 0l7 7m-7-7v18" />
-          </svg>
-        </button>
-      </div>
-    </div>
-  );
-};
-
-export default App;
+</body>
+</html>
